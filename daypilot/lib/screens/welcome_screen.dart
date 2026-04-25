@@ -32,4 +32,15 @@ class WelcomeScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget dot() {
+  return Container(
+    height: 12,
+    width: 12,
+    decoration: const BoxDecoration(
+      shape: BoxShape.circle,
+      color: Color(0xffd5cdf7),
+    ),
+  );
+}
 }
