@@ -22,9 +22,13 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(
-        child: Text("Welcome"),
+    return Scaffold(
+      backgroundColor: const Color(0xfff4f4fb),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(children: const [SizedBox(height: 25)]),
+        ),
+        
       ),
     );
   }
