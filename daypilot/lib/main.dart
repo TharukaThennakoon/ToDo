@@ -12,12 +12,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Tasky',
-      theme: ThemeData(useMaterial3: true, fontFamily: 'Roboto'),
-      home: const TaskyWelcomeScreen(
-        useLocalFile: true,
-        localPath: '/mnt/data/19626961-af3e-4dd6-b71c-356deeb75fa3.jpg',
+      title: 'DayPilot',
+      theme: ThemeData(
+        fontFamily: 'Poppins',
+        scaffoldBackgroundColor: const Color(0xFFF5F5FA),
+        primaryColor: const Color(0xFF5A3BE7),
       ),
+      home: const WelcomeScreen(),
     );
   }
 }
