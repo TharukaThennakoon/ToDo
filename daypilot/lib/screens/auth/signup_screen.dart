@@ -1,3 +1,4 @@
+import 'package:daypilot/services/auth.dart';
 import 'package:flutter/material.dart';
 import '../../services/navigation_service.dart';
 import '../../utils/colors.dart';
@@ -17,8 +18,10 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final AuthService _auth = AuthService();
   bool _obscurePassword = true;
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -108,6 +111,41 @@ class _SignupScreenState extends State<SignupScreen> {
                   isLoading: _isLoading,
                   darkMode: true,
                 ),
+                
+                // Divider with "or" text
+                const SizedBox(height: 24),
+                const Row(
+                  children: [
+                    Expanded(
+                      child: Divider(
+                        color: AppColors.onboardingTextSecondary,
+                        thickness: 0.5,
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'OR',
+                        style: TextStyle(
+                          color: AppColors.onboardingTextSecondary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Divider(
+                        color: AppColors.onboardingTextSecondary,
+                        thickness: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+                
+                // Google Sign In Button
+                const SizedBox(height: 16),
+                _buildGoogleSignInButton(),
+                
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -136,10 +174,74 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
+  Widget _buildGoogleSignInButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 50,
+      child: OutlinedButton(
+        onPressed: _isGoogleLoading ? null : _handleGoogleSignUp,
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+          side: const BorderSide(
+            color: AppColors.onboardingTextSecondary,
+            width: 1,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          elevation: 0,
+        ),
+        child: _isGoogleLoading
+            ? const SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: AppColors.primary,
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset(
+                    'assets/logo/google.png',
+                    height: 28,
+                    width: 28,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
+                        Icons.g_mobiledata,
+                        color: Colors.white,
+                        size: 28,
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Continue with Google',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
   void _handleSignup() async {
     if (_nameController.text.isEmpty ||
         _emailController.text.isEmpty ||
         _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all fields'),
+          backgroundColor: AppColors.secondary,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       return;
     }
 
@@ -147,13 +249,87 @@ class _SignupScreenState extends State<SignupScreen> {
       _isLoading = true;
     });
 
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      // Call your signup method from AuthService
+      dynamic result = await _auth.signUpWithEmailAndPassword(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+        _nameController.text.trim(),
+      );
 
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-      NavigationService.instance.toDashboard();
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        if (result != null) {
+          NavigationService.instance.toDashboard();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Signup failed. Please try again.'),
+              backgroundColor: AppColors.secondary,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            backgroundColor: AppColors.secondary,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  void _handleGoogleSignUp() async {
+    setState(() {
+      _isGoogleLoading = true;
+    });
+
+    try {
+      // Call the Google sign-in method from your AuthService
+      dynamic result = await _auth.signInWithGoogle();
+
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
+        });
+
+        if (result != null) {
+          // Successfully signed up with Google
+          NavigationService.instance.toDashboard();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Google sign-up failed. Please try again.'),
+              backgroundColor: AppColors.secondary,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Google sign-up error: ${e.toString()}'),
+            backgroundColor: AppColors.secondary,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
