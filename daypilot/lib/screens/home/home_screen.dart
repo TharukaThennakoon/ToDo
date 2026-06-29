@@ -1,3 +1,4 @@
+import 'package:daypilot/services/auth.dart';
 import 'package:flutter/material.dart';
 import '../../utils/colors.dart';
 import '../../widgets/stat_card.dart';
@@ -42,6 +43,8 @@ class _HomeScreenState extends State<HomeScreen> {
       'time': '2:30 PM - 4:20 PM',
     },
   ];
+
+  final AuthService _auth = AuthService();
 
   @override
   Widget build(BuildContext context) {
